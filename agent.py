@@ -34,6 +34,16 @@ class Agent:
         new_value = current + (self.alpha * (target - current))  # get updated value
         return new_value
 
+    def update_Q_expsarsa(self, state, action, reward, next_state=None):
+        """Returns updated Q-value for the most recent experience."""
+        current = self.Q[state][action]  # estimate in Q-table (for current state, action pair)
+        policy_s = np.ones(self.nA) * self.eps / self.nA  # current policy (for next state S')
+        policy_s[np.argmax(self.Q[next_state])] = 1 - self.eps + (self.eps / self.nA)  # greedy action
+        Qsa_next = np.dot(self.Q[next_state], policy_s)  # get value of state at next time step
+        target = reward + (self.gamma * Qsa_next)  # construct target
+        new_value = current + (self.alpha * (target - current))  # get updated value
+        return new_value
+
     def epsilon_greedy(self, state):
         """Selects epsilon-greedy action for supplied state.
 
@@ -76,7 +86,8 @@ class Agent:
 
         if not done:
             next_action = self.epsilon_greedy(next_state)  # epsilon-greedy action
-            self.Q[state][action] = self.update_Q_sarsamax(state, action, reward, next_state)
+            #self.Q[state][action] = self.update_Q_sarsamax(state, action, reward, next_state)
+            self.Q[state][action] = self.update_Q_expsarsa(state, action, reward, next_state)
 
             state = next_state  # S <- S'
             action = next_action  # A <- A'
